@@ -1,5 +1,5 @@
 module FCV
 
-include("FCV_t.jl")
+include("t/equispaced.jl")
 
 end
