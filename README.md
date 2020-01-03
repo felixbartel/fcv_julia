@@ -12,7 +12,7 @@ The `fcv` package is a Julia implementation for evaluating the ordinary cross-va
 
  * the modules `LinearAlgebra`, `IterativeSolvers`, `LinearOperators` are used throughout
  * the equispaced class on the torus use the `FFTW` module
- * the nonequispaced class on the torus use the `NFFT` module
+ * the nonequispaced class on the torus use the `NFFT` module from [here](https://www-user.tu-chemnitz.de/~potts/nfft/index.php)
 
 ## Citing
 

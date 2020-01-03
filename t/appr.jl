@@ -1,6 +1,5 @@
 export fcv_t_appr, compute
 
-#push!(LOAD_PATH, "../../nfft/julia/nfft/")
 using NFFT, LinearAlgebra, IterativeSolvers, LinearOperators
 
 
