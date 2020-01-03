@@ -11,9 +11,10 @@ struct fcv_t_appr
   M # number of nodes
   N # number of frequencies
 
-  function fcv_t_appr(nodes::Array{T}, f::Vector{T}, W::Vector{T}, N::Integer) where T <: Number
+  function fcv_t_appr(nodes::Array{T}, f::Vector{T}, W::Union{Vector{T}, Nothing}, N::Integer) where T <: Number
     p = Plan(ntuple(x -> Int32(N), size(nodes, 2)), size(nodes, 1))
     p.x = nodes
+    isnothing(W) && ( W = voronoiArea(nodes) )
     this = new(nodes, f, W, p, length(f), N)
   end
 end
