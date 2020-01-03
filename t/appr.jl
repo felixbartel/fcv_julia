@@ -22,7 +22,6 @@ end
 
 function H(fcv::fcv_t_appr, What::Array{Float64})
 # computes the matrix-vector product with the hat matrix F*inv(F'*W*F+What)*F'*W
-
   M = LinearOperator(fcv.M+fcv.N, fcv.N, false, false,
     fhat -> (fcv.p.fhat = fhat; NFFT.trafo(fcv.p); [sqrt.(fcv.W).*fcv.p.f; sqrt.(What).*fhat]),
     nothing,
