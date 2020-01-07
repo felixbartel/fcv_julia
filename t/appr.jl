@@ -4,33 +4,41 @@ using NFFT, LinearAlgebra, IterativeSolvers, LinearOperators
 
 
 struct fcv_t_appr
+  d::Int
   nodes::Array{Float64}
   f::Vector{Complex{Float64}}
   W::Vector{Complex{Float64}}
   p # NFFT plan
   M # number of nodes
   N # number of frequencies
+  x0::Vector{Complex{Float64}} # inital solution for lsqr
 
   function fcv_t_appr(nodes::Array{T}, f::Vector{T}, W::Union{Vector{T}, Nothing}, N::Integer) where T <: Number
-    p = Plan(ntuple(x -> Int32(N), size(nodes, 2)), size(nodes, 1))
-    p.x = nodes
+    d = size(nodes, 2)
+    p = Plan(ntuple(x -> Int(N), d), size(nodes, 1))
+    if d == 1
+      p.x = nodes
+    else
+      p.x = Matrix(transpose(nodes))
+    end
+    # p.num_threads = 4 # currently not supported :-(
     isnothing(W) && ( W = voronoiArea(nodes) )
-    this = new(nodes, f, W, p, length(f), N)
+    this = new(d, nodes, f, W, p, length(f), N, zeros(N^d))
   end
 end
 
 
 function H(fcv::fcv_t_appr, What::Array{Float64})
 # computes the matrix-vector product with the hat matrix F*inv(F'*W*F+What)*F'*W
-  M = LinearOperator(fcv.M+fcv.N, fcv.N, false, false,
+  M = LinearOperator(fcv.M+fcv.N^fcv.d, fcv.N^fcv.d, false, false,
     fhat -> (fcv.p.fhat = fhat; NFFT.trafo(fcv.p); [sqrt.(fcv.W).*fcv.p.f; sqrt.(What).*fhat]),
     nothing,
-    f -> (fcv.p.f = f[1:fcv.M]; NFFT.adjoint(fcv.p); sqrt.(conj(fcv.W)).*fcv.p.fhat+sqrt.(conj(What)).*f[fcv.M+1:end])
+    f -> (fcv.p.f = sqrt.(conj(fcv.W)).*f[1:fcv.M]; NFFT.adjoint(fcv.p); fcv.p.fhat+sqrt.(conj(What)).*f[fcv.M+1:end])
     )
-  fhat_r = lsqr(M, [sqrt.(fcv.W).*fcv.f; zeros(fcv.N)])
-  fcv.p.fhat = fhat_r
+  lsqr!(fcv.x0, M, [sqrt.(fcv.W).*fcv.f; zeros(fcv.N^fcv.d)], maxiter = 20)
+  fcv.p.fhat = fcv.x0
   NFFT.trafo(fcv.p)
-  return fcv.p.f, fhat_r
+  return fcv.p.f, fcv.x0
 end
 
 
