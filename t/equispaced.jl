@@ -13,7 +13,7 @@ struct fcv_t_equispaced
     FFTW.set_num_threads(4)
     M = length(f)
     tmp = ntuple(x -> Int(M^(1/d)), d)
-    F = plan_fft(reshape(f, tmp), flags = FFTW.MEASURE)
+    F = plan_fft(similar(reshape(f, tmp)), flags = FFTW.MEASURE)
     this = new(d, f, 1/length(f), F)
   end
 end
